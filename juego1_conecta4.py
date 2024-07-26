@@ -1,12 +1,14 @@
 """
 Este módulo contiene la implementación del juego Conecta 4.
 Incluye la lógica del juego, la gestión del tablero y la verificación de condiciones de victoria.
+Ademas de una pantalla de inicio
 """
 # Importaciones
 import sys
 import math
 import numpy as np
 import pygame
+from button import Button
 # Constantes
 BLUE = (0, 0, 255)
 BLACK = (0, 0, 0)
@@ -16,12 +18,11 @@ ROW_COUNT = 6
 COLUMN_COUNT = 7
 SQUARESIZE = 100
 RADIUS = int(SQUARESIZE/2 - 5)
+BG = pygame.image.load("assets/Background.png")
 # Variables
 # pylint: disable=invalid-name
 # pylint: disable=no-member
 # pylint: disable=redefined-outer-name
-game_over = False
-turn = 0
 width = COLUMN_COUNT * SQUARESIZE
 height = (ROW_COUNT+1) * SQUARESIZE
 size = (width, height)
@@ -121,71 +122,115 @@ def draw_board(board):
                     c*SQUARESIZE+SQUARESIZE/2), height-int(r*SQUARESIZE+SQUARESIZE/2)), RADIUS)
 
     pygame.display.update()
-
-
 # Llamada de las funciones
 board = create_board()
 print_board(board)
 pygame.init()
-
 # Creacion de la ventana
 screen = pygame.display.set_mode(size)
+pygame.display.set_caption("Menu")
+def get_font(size): # Returns Press-Start-2P in the desired size
+    return pygame.font.Font("assets/font.ttf", size)
 draw_board(board)
 pygame.display.update()
 myfont = pygame.font.SysFont("monospace", 75)
+#Loop del juego
+def juego():
+    pygame.display.set_caption("Conecta 4")
+    game_over = False
+    turn = 0
+    while not game_over:
+        # Esto hace que si el jugador hace click en la X de la ventana el programa se cierre
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            # Esto hace la animacion de arriba de la ficha y cambia de color dependiendo el juagdor
+            if event.type == pygame.MOUSEMOTION:
+                pygame.draw.rect(screen, BLACK, (0, 0, width, SQUARESIZE))
+                posx = event.pos[0]
+                if turn == 0:
+                    pygame.draw.circle(
+                        screen, RED, (posx, int(SQUARESIZE/2)), RADIUS)
+                else:
+                    pygame.draw.circle(
+                        screen, YELLOW, (posx, int(SQUARESIZE/2)), RADIUS)
+                pygame.display.update()
+            # Se espera a que el jugador 1 haga su turno
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pygame.draw.rect(screen, BLACK, (0, 0, width, SQUARESIZE))
+                if turn == 0:
+                    posx = event.pos[0]
+                    col = int(math.floor(posx/SQUARESIZE))
+
+                    if is_valid_location(board, col):
+                        row = get_next_open_row(board, col)
+                        drop_piece(board, row, col, 1)
+
+                        if winning_move(board, 1):
+                            label = myfont.render("Player 1 wins", 1, RED)
+                            screen.blit(label, (40, 10))
+                            game_over = True
+                            # pylint: enable=invalid-name
+
+                # Se espera a que el jugador 2 haga su turno
+                else:
+                    posx = event.pos[0]
+                    col = int(math.floor(posx/SQUARESIZE))
+
+                    if is_valid_location(board, col):
+                        row = get_next_open_row(board, col)
+                        drop_piece(board, row, col, 2)
+
+                        if winning_move(board, 2):
+                            label = myfont.render("Player 2 wins", 1, YELLOW)
+                            screen.blit(label, (40, 10))
+                            game_over = True
+
+                print_board(board)
+                draw_board(board)
+
+                turn += 1
+                turn = turn % 2
+
+                if game_over:
+                    pygame.time.wait(3000)
+
+#Menu princiapl
+def main_menu():
+    while True:
+        screen.blit(BG, (0, 0))
+
+        MENU_MOUSE_POS = pygame.mouse.get_pos()
+
+        MENU_TEXT = get_font(100).render("MAIN MENU", True, "#b68f40")
+        MENU_RECT = MENU_TEXT.get_rect(center=(640, 100))
+
+        PLAY_BUTTON = Button(image=pygame.image.load("assets/Play Rect.png"), pos=(640, 250), 
+                            text_input="PLAY", font=get_font(75), base_color="#d7fcd4", hovering_color="White")
+        OPTIONS_BUTTON = Button(image=pygame.image.load("assets/Options Rect.png"), pos=(640, 400), 
+                            text_input="OPTIONS", font=get_font(75), base_color="#d7fcd4", hovering_color="White")
+        QUIT_BUTTON = Button(image=pygame.image.load("assets/Quit Rect.png"), pos=(640, 550), 
+                            text_input="QUIT", font=get_font(75), base_color="#d7fcd4", hovering_color="White")
+
+        screen.blit(MENU_TEXT, MENU_RECT)
+
+        for button in [PLAY_BUTTON, OPTIONS_BUTTON, QUIT_BUTTON]:
+            button.changeColor(MENU_MOUSE_POS)
+            button.update(screen)
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if PLAY_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    juego()
+                if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    pygame.quit()
+                    sys.exit()
+
+        pygame.display.update()
+
+main_menu()
+
 # Loop principal del juego
-while not game_over:
-    # Esto hace que si el jugador hace click en la X de la ventana el programa se cierre
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            sys.exit()
-        # Esto hace la animacion de arriba de la ficha y cambia de color dependiendo el juagdor
-        if event.type == pygame.MOUSEMOTION:
-            pygame.draw.rect(screen, BLACK, (0, 0, width, SQUARESIZE))
-            posx = event.pos[0]
-            if turn == 0:
-                pygame.draw.circle(
-                    screen, RED, (posx, int(SQUARESIZE/2)), RADIUS)
-            else:
-                pygame.draw.circle(
-                    screen, YELLOW, (posx, int(SQUARESIZE/2)), RADIUS)
-            pygame.display.update()
-        # Se espera a que el jugador 1 haga su turno
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            pygame.draw.rect(screen, BLACK, (0, 0, width, SQUARESIZE))
-            if turn == 0:
-                posx = event.pos[0]
-                col = int(math.floor(posx/SQUARESIZE))
-
-                if is_valid_location(board, col):
-                    row = get_next_open_row(board, col)
-                    drop_piece(board, row, col, 1)
-
-                    if winning_move(board, 1):
-                        label = myfont.render("Player 1 wins", 1, RED)
-                        screen.blit(label, (40, 10))
-                        game_over = True
-                        # pylint: enable=invalid-name
-
-            # Se espera a que el jugador 2 haga su turno
-            else:
-                posx = event.pos[0]
-                col = int(math.floor(posx/SQUARESIZE))
-
-                if is_valid_location(board, col):
-                    row = get_next_open_row(board, col)
-                    drop_piece(board, row, col, 2)
-
-                    if winning_move(board, 2):
-                        label = myfont.render("Player 2 wins", 1, YELLOW)
-                        screen.blit(label, (40, 10))
-                        game_over = True
-
-            print_board(board)
-            draw_board(board)
-
-            turn += 1
-            turn = turn % 2
-
-            if game_over:
-                pygame.time.wait(3000)
