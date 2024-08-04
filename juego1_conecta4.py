@@ -1,8 +1,9 @@
 """
-Este módulo contiene la implementación del juego Conecta 4.
-Incluye la lógica del juego, la gestión del tablero y la verificación de condiciones de victoria.
-Ademas de una pantalla de inicio
+Este módulo contiene el juego Conecta 4.
 """
+# pylint: disable=invalid-name
+# pylint: disable=no-member
+# pylint: disable=redefined-outer-name
 # Importaciones
 import sys
 import math
@@ -20,9 +21,6 @@ SQUARESIZE = 100
 RADIUS = int(SQUARESIZE/2 - 5)
 BG = pygame.image.load("assets/Background.png")
 # Variables
-# pylint: disable=invalid-name
-# pylint: disable=no-member
-# pylint: disable=redefined-outer-name
 width = COLUMN_COUNT * SQUARESIZE
 height = (ROW_COUNT+1) * SQUARESIZE
 size = (width, height)
@@ -31,56 +29,44 @@ button_sfx = pygame.mixer.Sound("assets/smw_coin.wav")
 piece_sfx = pygame.mixer.Sound("assets/smw_stomp.wav")
 win_sfx = pygame.mixer.Sound("assets/smw_bonus_game_end.wav")
 music = pygame.mixer.music.load("assets/2-19. Slot Machine.mp3")
-# Crea una matriz llena de zeros y de la mida que sea establecida en row_count y column_count.
-# Quien llame a esta funcion se le retornara el valor de la variable
-
 
 def create_board():
     """
-    Crea el tablero de juego de Conecta 4 con todas las posiciones inicializadas a cero.
-
-    Returns:
-        np.ndarray: Un array de NumPy con dimensiones (ROW_COUNT, COLUMN_COUNT) inicializado a cero.
+    Crea el tablero de juego con todas las posiciones inicializadas a cero.
     """
     board = np.zeros((ROW_COUNT, COLUMN_COUNT))
     return board
-# Escoge las cordenadas de la board y eso sea el lugar a donde la piece se posicionara
-
 
 def drop_piece(board, row, col, piece):
     """
     Coloca una pieza en el tablero de Conecta 4.
-
-    Args:
-        board (np.ndarray): El tablero de juego representado como un array de NumPy.
-        row (int): La fila en la que se colocará la pieza.
-        col (int): La columna en la que se colocará la pieza.
-        piece (int): El valor de la pieza a colocar en el tablero (por ejemplo, 1 para el jugador 1, 2 para el jugador 2).
-    Returns:
-        None
     """
     board[row][col] = piece
 
-# Se asegura que el movimiento es valido, en el caso que lo sea devolvera al remitente un 0.
-
-
 def is_valid_location(board, col):
+    """
+    Verifica si la posicion seleccionada es valida en el tablero.
+    """
     return board[ROW_COUNT-1][col] == 0
-# Se asegura que la siguiente fila este abierta, en el caso que lo sea devolvera la itirenacion.
-
 
 def get_next_open_row(board, col):
+    """
+    Mira cual es la siguiente fila disponible.
+    """
     for r in range(ROW_COUNT):
         if board[r][col] == 0:
             return r
-# Printara la board por pantalla
-
 
 def print_board(board):
+    """"
+    Imprime la tabla en pantalla.
+    """
     print(np.flip(board, 0))
 
-
 def winning_move(board, piece):
+    """
+    Mira todas las combinaciones posibles a donde el jugador gana.
+    """
     # Check horizonatl position |
     for c in range(COLUMN_COUNT-3):
         for r in range(ROW_COUNT):
@@ -104,11 +90,11 @@ def winning_move(board, piece):
         for r in range(ROW_COUNT):
             if board[r][c] == piece and board[r-1][c+1] == piece and board[r-2][c+2] == piece and board[r-3][c+3] == piece:
                 return True
-# Esta funcion se encarga de dibujar la tabla con los circulos negros
-# Para mas informacion porfavor vaya a la documentacion de pygame
-
 
 def draw_board(board):
+    """
+    Dibuja la tabla distinguiendo entre los 2 jugadores a donde el Jugador 1 tendra fichas rojas y el Jugador 2 tendra fichas amarillas.
+    """
     # Jugador 1
     for c in range(COLUMN_COUNT):
         for r in range(ROW_COUNT):
@@ -127,20 +113,27 @@ def draw_board(board):
                     c*SQUARESIZE+SQUARESIZE/2), height-int(r*SQUARESIZE+SQUARESIZE/2)), RADIUS)
 
     pygame.display.update()
-# Llamada de las funciones
+# Llamado de las funciones
 board = create_board()
 print_board(board)
 pygame.init()
-# Creacion de la ventana
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption("Menu")
-def get_font(size): # Returns Press-Start-2P in the desired size
+
+def get_font(size):
+    """
+    Desde la carpeta de assets se coge la fuente y la devuelve al remitente.
+    """
     return pygame.font.Font("assets/font.ttf", size)
+
 draw_board(board)
 pygame.display.update()
 myfont = pygame.font.SysFont("monospace", 75)
-#Loop del juego
+
 def juego():
+    """
+    Este es el loop principal del Juego a donde se espera la entrada de los 2 jugadores.
+    """
     pygame.display.set_caption("Conecta 4")
     screen.fill("black")
     pygame.mixer.music.play(-1)
@@ -211,8 +204,11 @@ def juego():
                     pygame.time.wait(3000)
                     sys.exit()
 
-#Menu princiapl
+#Menu principal
 def main_menu():
+    """
+    Esta la estetica del menu y sus botones.
+    """
     while True:
         screen.blit(BG, (0, 0))
 
@@ -249,5 +245,3 @@ def main_menu():
         pygame.display.update()
 
 main_menu()
-
-# Loop principal del juego
