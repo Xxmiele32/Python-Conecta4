@@ -137,6 +137,9 @@ myfont = pygame.font.SysFont("monospace", 75)
 #Loop del juego
 def juego():
     pygame.display.set_caption("Conecta 4")
+    screen.fill("black")
+    draw_board(board)
+    pygame.display.update()
     game_over = False
     turn = 0
     while not game_over:
