@@ -26,6 +26,11 @@ BG = pygame.image.load("assets/Background.png")
 width = COLUMN_COUNT * SQUARESIZE
 height = (ROW_COUNT+1) * SQUARESIZE
 size = (width, height)
+pygame.mixer.init()
+button_sfx = pygame.mixer.Sound("assets/smw_coin.wav")
+piece_sfx = pygame.mixer.Sound("assets/smw_stomp.wav")
+win_sfx = pygame.mixer.Sound("assets/smw_bonus_game_end.wav")
+music = pygame.mixer.music.load("assets/2-19. Slot Machine.mp3")
 # Crea una matriz llena de zeros y de la mida que sea establecida en row_count y column_count.
 # Quien llame a esta funcion se le retornara el valor de la variable
 
@@ -138,6 +143,7 @@ myfont = pygame.font.SysFont("monospace", 75)
 def juego():
     pygame.display.set_caption("Conecta 4")
     screen.fill("black")
+    pygame.mixer.music.play(-1)
     draw_board(board)
     pygame.display.update()
     game_over = False
@@ -168,11 +174,14 @@ def juego():
                     if is_valid_location(board, col):
                         row = get_next_open_row(board, col)
                         drop_piece(board, row, col, 1)
+                        piece_sfx.play()
 
                         if winning_move(board, 1):
                             label = myfont.render("Player 1 wins", 1, RED)
                             screen.blit(label, (40, 10))
                             game_over = True
+                            pygame.mixer.music.stop()
+                            win_sfx.play()
                             # pylint: enable=invalid-name
 
                 # Se espera a que el jugador 2 haga su turno
@@ -183,11 +192,14 @@ def juego():
                     if is_valid_location(board, col):
                         row = get_next_open_row(board, col)
                         drop_piece(board, row, col, 2)
+                        piece_sfx.play()
 
                         if winning_move(board, 2):
                             label = myfont.render("Player 2 wins", 1, YELLOW)
                             screen.blit(label, (40, 10))
                             game_over = True
+                            pygame.mixer.music.stop()
+                            win_sfx.play()
 
                 print_board(board)
                 draw_board(board)
@@ -197,6 +209,7 @@ def juego():
 
                 if game_over:
                     pygame.time.wait(3000)
+                    sys.exit()
 
 #Menu princiapl
 def main_menu():
@@ -205,30 +218,31 @@ def main_menu():
 
         MENU_MOUSE_POS = pygame.mouse.get_pos()
 
-        MENU_TEXT = get_font(100).render("MAIN MENU", True, "#b68f40")
-        MENU_RECT = MENU_TEXT.get_rect(center=(640, 100))
+        MENU_TEXT = get_font(75).render("MAIN MENU", True, "#b68f40")
+        MENU_RECT = MENU_TEXT.get_rect(center=(350, 100))
 
-        PLAY_BUTTON = Button(image=pygame.image.load("assets/Play Rect.png"), pos=(640, 250), 
+        PLAY_BUTTON = Button(image=pygame.image.load("assets/Play Rect.png"), pos=(335, 300),
                             text_input="PLAY", font=get_font(75), base_color="#d7fcd4", hovering_color="White")
-        OPTIONS_BUTTON = Button(image=pygame.image.load("assets/Options Rect.png"), pos=(640, 400), 
-                            text_input="OPTIONS", font=get_font(75), base_color="#d7fcd4", hovering_color="White")
-        QUIT_BUTTON = Button(image=pygame.image.load("assets/Quit Rect.png"), pos=(640, 550), 
+        QUIT_BUTTON = Button(image=pygame.image.load("assets/Quit Rect.png"), pos=(335, 450),
                             text_input="QUIT", font=get_font(75), base_color="#d7fcd4", hovering_color="White")
 
         screen.blit(MENU_TEXT, MENU_RECT)
 
-        for button in [PLAY_BUTTON, OPTIONS_BUTTON, QUIT_BUTTON]:
+        for button in [PLAY_BUTTON, QUIT_BUTTON]:
             button.changeColor(MENU_MOUSE_POS)
             button.update(screen)
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                button_sfx.play()
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if PLAY_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    button_sfx.play()
                     juego()
                 if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    button_sfx.play()
                     pygame.quit()
                     sys.exit()
 
